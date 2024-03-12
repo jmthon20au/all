@@ -9,7 +9,7 @@ from pyrogram.enums import ChatMemberStatus
 from pyrogram.errors import FloodWait
 
 
-token="7061142157:AAE0jacMezSHlwU1C-CIRAp-KuvlRODzj94"
+token="6418845303:AAGV-jU1GiVv21Z44awdtN2f2ULwz_bkz2Q"
 
 app=Client(
     "@Y88F8 - @all",
