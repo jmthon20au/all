@@ -1,88 +1,70 @@
-from pyrogram import Client,filters
-from pyrogram.types import ForceReply,ChatPrivileges,InlineKeyboardButton,InlineKeyboardMarkup
-from pyromod import listen
-from pyrogram.enums import ChatMemberStatus
+import telebot
+import subprocess
+import os
+from telebot import types
 
-app = Client("Channel -.",api_id=14170449,api_hash="03488b3c030fe095667e7ca22fe34954",bot_token="7334672582:AAHxyRHpt7PATlLCfES88C-YLMfHyDew7fE")
+bot_token = '7150240952:AAF_eiEEJhmX1WUdK9_esNb3xiuNAXS8DS8'
+bot = telebot.TeleBot(bot_token)
 
+uploaded_files_count = 0
+current_file_name = ""
+running_process = None
 
-@app.on_message(filters.command("رفع مشرف",""),filters.group)
-async def UpAdmin(bot,msg):
-	UserID = msg.reply_to_message.from_user.id
-	ChatID = msg.chat.id
-	
-	Can_C = False
-	Can_D = False
-	Can_I = False
-	Can_R = False
-	Can_P = False
-	Can_MV = False
-	Can_PR = False
-	
-	R = await msg.chat.get_member(msg.from_user.id)
-	
-	if R.status == ChatMemberStatus.OWNER or R.status == ChatMemberStatus.ADMINISTRATOR:
-		ask = await msg.chat.ask("⇜ تمام الحين ارسل صلاحيات المشرف \n\n1 ⇠ صلاحيه تغيير المعلومات\n2 ⇠ صلاحيه حذف الرسائل\n3 ⇠ صلاحيه دعوه مستخدمين\n4 ⇠ صلاحيه حظر وتقيد المستخدمين \n5 ⇠ صلاحيه تثبيت الرسائل \n6 ⇠ صلاحيه ادارة المكالمات\n7 ⇜ صلاحيه رفع مشرفين اخرين\n* ⇠ لرفع كل الصلاحيات ما عدا رفع المشرفين \n** ⇠ لرفع كل الصلاحيات مع رفع المشرفين \n\n⇜ يمديك تختار الارقام مع بعض  \n\nمثال: 136 \n༄",
-		reply_markup=ForceReply(),filters=filters.text)
-		TexT = ask.text
-		
-		if str("1") in TexT:
-			Can_C = True
-		if str("2") in TexT:
-			Can_D = True
-		if str("3") in TexT:
-			Can_I = True
-		if str("4") in TexT:
-			Can_R = True
-		if str("5") in TexT:
-			Can_P = True
-		if str("6") in TexT:
-			Can_MV = True
-		if str("7") in TexT:
-			Can_PR = True
-		if str("*") in TexT:
-			Can_C = True
-			Can_D = True
-			Can_I = True
-			Can_R = True
-			Can_P = True
-			Can_MV = True
-		if str("**") in TexT:
-			Can_C = True
-			Can_D = True
-			Can_I = True
-			Can_R = True
-			Can_P = True
-			Can_MV = True
-			Can_PR = True
-		try:
-			await bot.promote_chat_member(
-			chat_id=ChatID,
-			user_id=UserID,
-			privileges=ChatPrivileges(
-		    can_promote_members=Can_PR,
-		    can_manage_video_chats=Can_MV,
-		    can_pin_messages=Can_P,
-		    can_invite_users=Can_I,
-		    can_restrict_members=Can_R,
-		    can_delete_messages=Can_D,
-		    can_change_info=Can_C))
-		except Exception as e:
-			return await msg.reply(f"**عزيزي :**\n「{m.from_user.mention}」\nهذا لم يتم رفعه من خلالي\n\n**Error**:\n"+ str(e))
-			
-		if any(i in ask.text for i in ['1','2','3', '4', '5', '6','7','*','**']):
-			return await msg.reply(f"**•「{msg.from_user.mention}」\nتم رفعته مشرف**",reply_markup=
-			InlineKeyboardMarkup
-			([[InlineKeyboardButton(
-			msg.reply_to_message.from_user.first_name,
-			user_id=
-			msg.reply_to_message.from_user.id)]]))
-		else:
-			return await msg.reply("اتكلم بعدين و ارفع مشرف")
-	
-	else:
-		return await msg.reply("هذا الامر للمشرفين فقط")
+@bot.message_handler(commands=['start'])
+def start_message(message):
+    global uploaded_files_count
+    keyboard = types.InlineKeyboardMarkup()
+    upload_button = types.InlineKeyboardButton(text="رفع ملف 📤", callback_data="upload")
+    delete = types.InlineKeyboardButton(text="حذف كل الملفات 🗑", callback_data="delete")
+    keyboard.row(upload_button,delete)
+    bot.reply_to(message, f'مرحباً بك في بوت ويفي 🌊 \n\n※ بوت رفع ملفات على استضافة بايثون 📤 \n※ تحكم في البوت من الازرار الموجودة بالاسفل \n\n※ عدد الملفات المرفوعه {uploaded_files_count} 📂', reply_markup=keyboard)
 
+@bot.message_handler(content_types=['document'])
+def handle_file(message):
+    global uploaded_files_count, current_file_name
+    file_info = bot.get_file(message.document.file_id)
+    downloaded_file = bot.download_file(file_info.file_path)
+    
+    current_file_name = message.document.file_name
+    
+    with open(current_file_name, 'wb') as new_file:
+        new_file.write(downloaded_file)
+    
+    uploaded_files_count += 1
+    bot.reply_to(message, f'تم رفع الملف بنجاح ✅. \n\n※ توكن البوت: {bot_token}')
 
-print("7")
-app.run()
+    keyboard = types.InlineKeyboardMarkup()
+    run_button = types.InlineKeyboardButton(text="تشغيل الملف ▶️", callback_data="run")
+    delete_button = types.InlineKeyboardButton(text="ايقاف الملف ⏸", callback_data="stop")
+    keyboard.row(run_button, delete_button)
+    bot.send_message(message.chat.id, 'يمكنك الآن تشغيل الملف المرفوع أو حذفه:', reply_markup=keyboard)
+
+@bot.callback_query_handler(func=lambda call: True)
+def callback_query(call):
+    global current_file_name, running_process
+    try:
+        if call.data == 'upload':
+            bot.send_message(call.message.chat.id, 'أرسل الملف لرفعه على الاستضافة 📤.')
+        elif call.data == 'delete':
+            files = os.listdir('.')
+            for file in files:
+                if file.endswith('.py'):
+                    os.remove(file)
+            bot.send_message(call.message.chat.id, 'تم حذف جميع الملفات بنجاح 🗑.')
+        elif call.data == 'run':
+            if running_process is not None:
+                bot.send_message(call.message.chat.id, 'الملف شغال بالفعل ⚠️.')
+            else:
+                running_process = subprocess.Popen(['python3', current_file_name])
+                bot.send_message(call.message.chat.id, 'تمام شغلت الملف على السيرفر تقدر تستخدمه دلوقت ✅.')
+        elif call.data == 'stop':
+            if running_process is not None:
+                running_process.terminate()
+                running_process = None
+                bot.send_message(call.message.chat.id, 'تمام وقفت تشغيل الملف من على السيرفر ✅.')
+            else:
+                bot.send_message(call.message.chat.id, 'مفيش ملفات شغاله اصلا ❌.')
+    except Exception as e:
+        bot.send_message(call.message.chat.id, f'❌ حدث خطأ أثناء المعالجة : {e}')
+
+bot.polling()
