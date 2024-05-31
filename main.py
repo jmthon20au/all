@@ -129,6 +129,4 @@ def owner(m):
 """,parse_mode='html')
 @bot.message_handler(regexp='^الايدي')
 
-bot.infinity_polling(allowed_updates=util.update_types)
-print("تم")
-
+bot.polling()
