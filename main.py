@@ -117,6 +117,7 @@ def home(message):
 	kl='''
 لمعرفه ايدي حسابك التلكرام ارسل كلمه ايدي\nلمعرفه ايدي اي شخص فقط قوم برد على شخص واكتب ايدي\nاذا كنت ان تريد ان تقيد شخص فقط قم بالرد على الشخص واكتب تقيد \nواذا تريد ان بالغاء تقيد فقط قم بالرد على الشخص واكتب الغاء تقيد\nاذا كنت تريد تثبيت الرسال فقط قم بالرد على الرساله واكتب تثببت\nواذا كنت تريد الغاء تثبيت فقط قم بالرد على الرساله واكتب الغاء تثبيت\nاذا تريد ان يغادر البوت من حاله فقط ارسل /leav\n لاضهار رتبتك فقط قوم بارسال رتبتي\nلرفع شخص مميز فقط قم بالرد على شخص وثم بقول رفع مميز
 '''
+	bot.send_message(message.chat.id,f'<strong>{kl}</strong>',parse_mode='html')
 @bot.message_handler(regexp='^الايدي')
 def owner(m):
 	bot.send_message(m.chat.id,"""
@@ -126,10 +127,8 @@ def owner(m):
 
 ابط حسابك ↫{user_link}
 """,parse_mode='html')
-@bot.message_handler(regexp='^حسين')
+@bot.message_handler(regexp='^الايدي')
 
-	
-	bot.send_message(message.chat.id,f'<strong>{kl}</strong>',parse_mode='html')
 bot.infinity_polling(allowed_updates=util.update_types)
 print("تم")
 
