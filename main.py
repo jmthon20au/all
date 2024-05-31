@@ -120,6 +120,9 @@ def home(message):
 	bot.send_message(message.chat.id,f'<strong>{kl}</strong>',parse_mode='html')
 bot.infinity_polling(allowed_updates=util.update_types)
 print("تم")
+import telebot, random, datetime 
+from kvsqlite.sync import Client
+from telebot.types import InlineKeyboardButton as btn, InlineKeyboardMarkup as mk 
 @bot.message_handler(commands=["start"])
 def sta(message):
     bot.reply_to(message, "اهلا فيك في بوت دادي!\nضيفني بكروبك، واستمتع.")
