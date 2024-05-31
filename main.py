@@ -120,3 +120,96 @@ def home(message):
 	bot.send_message(message.chat.id,f'<strong>{kl}</strong>',parse_mode='html')
 
 bot.polling()
+DB_NAME = "database.db"
+USERS_TABLE = "users"
+
+# تعريف الحقول الخاصة بجدول المستخدمين
+FIELDS = ('user_id', 'is_vip')
+
+# تعريف دالة لفتح قاعدة البيانات
+def open_db():
+    return sqlite3.connect(DB_NAME)
+
+# تعريف دالة لإنشاء جدول المستخدمين في حالة عدم وجوده
+def create_db():
+    conn = open_db()
+    cursor = conn.cursor()
+    cursor.execute(f'''CREATE TABLE IF NOT EXISTS {USERS_TABLE}
+        ({FIELDS[0]} INTEGER PRIMARY KEY,
+        {FIELDS[1]} INTEGER NOT NULL DEFAULT 0)''')
+    conn.commit()
+    conn.close()
+
+# تعريف دالة لإضافة مستخدم جديد وجعله مميزاً
+def add_vip_user(user_id):
+    conn = open_db()
+    cursor = conn.cursor()
+    cursor.execute(f"INSERT OR IGNORE INTO {USERS_TABLE} ({FIELDS[0]}, {FIELDS[1]}) VALUES (?, ?)", 
+                   (user_id, 1))
+    conn.commit()
+    conn.close()
+
+# تعريف دالة لإزالة المستخدم من قائمة المميزين
+def remove_vip_user(user_id):
+    conn = open_db()
+    cursor = conn.cursor()
+    cursor.execute(f"UPDATE {USERS_TABLE} SET {FIELDS[1]}=? WHERE {FIELDS[0]}=?", 
+                   (0, user_id))
+    conn.commit()
+    conn.close()
+
+# تعريف دالة للتحقق من رتبة المستخدم
+def is_vip_user(user_id):
+    conn = open_db()
+    cursor = conn.cursor()
+    cursor.execute(f"SELECT {FIELDS[1]} FROM {USERS_TABLE} WHERE {FIELDS[0]}=?", (user_id,))
+    result = cursor.fetchone()
+    conn.close()
+    return True if result and result[0] else False
+
+
+# تعريف دالة لرد على الأمر "/start"
+@app.on_message(filters.command(["start"]))
+async def start_command(client, message):
+    await message.reply(
+        "مرحباً بك في البوت!\n"
+        "يتم تفعيل الرتبة المميزة بواسطة أمر الرفع (/promote)\n"
+        "ويتم إلغاء الرتبة مميزة بواسطة أمر التنزيل (/demote)\n"
+        "يمكن التحقق من الرتبة المميزة بواسطة أمر التأكد (/check_vip)"
+    )
+
+# تعريف دالة لرفع رتبة المستخدم إلى مميز
+@app.on_message(filters.command(["م"]) & filters.reply)
+async def promote_command(client, message):
+    user_id = message.reply_to_message.from_user.id
+    add_vip_user(user_id)
+    await message.reply(f"تم رفع {user_id} إلى رتبة المميز.")
+
+# تعريف دالة لتخفيض رتبة المستخدم إلى عادي
+@app.on_message(filters.command(["ت"]) & filters.reply)
+async def demote_command(client, message):
+    user_id = message.reply_to_message.from_user.id
+    remove_vip_user(user_id)
+    await message.reply(f"تم تخفيض {user_id} إلى عضو عادي.")
+
+# تعريف دالة للتحقق من رتبة المستخدم
+@app.on_message(filters.command(["رتبتي"]))
+async def check_vip_command(client, message):
+    user_id = message.from_user.id
+    if is_vip_user(user_id):
+        await message.reply("أنت مميز بالفعل.")
+    else:
+        await message.reply("أنت لست مميزاً.")
+
+
+  
+
+@app.on_message(filters.video_chat_started)
+async def StartCall(c:Client,m:Message):
+  await m.reply(">  تم بدأ مكالمة فيديو ")
+  
+
+@app.on_message(filters.video_chat_ended)
+async def EndCall(c:Client,m:Message):
+  await m.reply(">  تم انهاء مكالمة الفيديو")
+	
