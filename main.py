@@ -1,8 +1,8 @@
 import telebot
 from telebot import types
 from telebot import *
-tok=input('7334672582:AAHxyRHpt7PATlLCfES88C-YLMfHyDew7fE')
-bot=telebot.TeleBot(tok)
+token = '7334672582:AAHxyRHpt7PATlLCfES88C-YLMfHyDew7fE'
+bot=telebot.TeleBot(token)
 @bot.message_handler(regexp='6454550864')
 def id(message):
 	if message.reply_to_message:
